@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "body-parser": "^1.19.2",
+    "express": "^4.17.3",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.29.1",
+    "mongoose": "^6.2.8",
+    "nodemon": "^2.0.15",
+    "require": "^0.4.4",
+    "validator": "^13.7.0"
+  }
+}
