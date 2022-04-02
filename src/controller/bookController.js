@@ -15,9 +15,7 @@ const createBook = async (req, res) => {
         }
         const { title, excerpt, userId, ISBN, category, subcategory, reviews, releasedAt } = req.body;
 
-        if (req.user !== userId) {
-            return res.status(401).send({ status: false, message: "You are not authorized" })
-        }
+        
         if (!isValid(title)) {
             return res.status(400).send({ status: false, message: 'title is required' })
         }
@@ -61,11 +59,10 @@ const createBook = async (req, res) => {
         if (!isValid(subcategory)) {
             return res.status(400).send({ status: false, message: 'subcategory is required' })
         }
-        if (!(/^((?:19|20)[0-9][0-9])-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])/.test(releasedAt))) {
+        if (releasedAt && !(/^((?:19|20)[0-9][0-9])-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])/.test(releasedAt))) {
             res.status(400).send({ status: false, message: "Plz provide valid released Date" })
             return
         }
-
         if (!isValid(releasedAt)) {
             return res.status(400).send({ status: false, message: 'releasedAt is required' })
         }
@@ -93,11 +90,11 @@ const getBooksDetails = async (req, res) => {
                 filterQuery['userId'] = userId
             }
             if (isValid(category)) {
-                filterQuery['category'] = category
+                filterQuery['category'] = category.trim()
             }
             if (isValid(subcategory)) {
-                const subcatArr = subcategory.trim().split(',').map(subcat => subcat.trim())
-                filterQuery['subcategory'] = { $all: subcatArr }
+                
+                filterQuery['subcategory'] = subcategory.trim()
             }
         }
         const books = await bookModel.find(filterQuery,
@@ -124,7 +121,7 @@ const getBooksById = async (req, res) => {
             return res.status(400).send({ status: false, message: 'Only Object Id allowed !' });
         }
 
-        const books = await bookModel.findOne({ _id: bookId, isDeleted: false });
+        const books = await bookModel.findById({ _id: bookId, isDeleted: false });
         if (!books) {
             return res.status(404).send({ status: false, message: "Book not found" })
         }
@@ -149,13 +146,13 @@ const updateBook = async function (req, res) {
     try {
         const bookId = req.params.bookId
         const requestBody = req.body
+        const userId= req.userId
+        const params=req.params
 
-        if (!/^[0-9a-fA-F]{24}$/.test(bookId)) {
-            return res
-                .status(400)
-                .send({ status: false, message: "please provide valid BookId" });
+        if (!isValidObjectId(bookId)) {
+            return res.status(400).send({ status: false, message: '${bookId} Only Object Id allowed ' });
         }
-
+       
         const isBookIdPresent = await bookModel.findOne({ _id: bookId, isDeleted: false });
         if (!isBookIdPresent) {
             res.status(404).send({ status: false, message: `Book data not found with this Id ${bookId}` });
@@ -216,10 +213,15 @@ const deletedById = async (req, res) => {
         if (!isValidObjectId(req.params.bookId)) {
             return res.status(400).send({ status: false, msg: "Invalid Bookid" })
         }
+     
+        if (!isValidObjectId(req.params.userId)) {
+            return res.status(400).send({ status: false, msg: "Invalid userid" })
+        }
 
         const details = {
             isDeleted: false,
-            _id: req.params.bookId
+            _id: req.params.bookId,
+            _id :req.params.userId
         }
         const book = await bookModel.findOne({ _id: req.params.bookId, isDeleted: false })
         if (!book) {
