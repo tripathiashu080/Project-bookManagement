@@ -4,19 +4,19 @@ const { isValid, isValidRequestBody } = require('../validator/validator');
 
 const createUser = async (req, res) => {
     try {
-       const requestBody = req.body;
+        const requestBody = req.body;
 
         if (!isValidRequestBody(requestBody)) {
             return res.status(400).send({ status: false, message: "Invalid request parameters. Please provide User details" })
         }
-        const { title, name, phone, email, password , address} = req.body
+        const { title, name, phone, email, password, address } = req.body
 
         if (!isValid(title)) {
             return res.status(400).send({ status: false, message: 'title is required' })
         }
-    
-        if(["Mr", "Mrs", "Miss"].indexOf(title) === -1 ){
-            return res.status(400).send({status:false, msg:"Plz enter vaild Title"})
+
+        if (["Mr", "Mrs", "Miss"].indexOf(title) === -1) {
+            return res.status(400).send({ status: false, msg: "Plz enter vaild Title" })
         }
 
         if (!isValid(name)) {
@@ -55,13 +55,13 @@ const createUser = async (req, res) => {
             return res.status(400).send({ status: false, message: 'password should be valid password' })
 
         }
-        const newUser = { title: title, name: name, phone: phone, email: email,password: password, address:address }
+        const newUser = { title: title, name: name, phone: phone, email: email, password: password, address: address }
 
         const userCreated = await userModel.create(newUser)
         res.status(201).send({ status: true, message: "Success", data: userCreated })
     }
     catch (error) {
-        return res.status(500).send({ status: false, message: error.message});
+        return res.status(500).send({ status: false, message: error.message });
     }
 }
 
@@ -106,10 +106,10 @@ const userLogin = async (req, res) => {
         }
 
         const token = jwt.sign({
-          id: user._id
-      }, 'Group28', { expiresIn: 60 * 30 });
-      res.setHeader("x-api-key", token);
-      return res.status(200).send({ 'status': true, message: "Success", data: token });
+            id: user._id
+        }, 'Group28', { expiresIn: 60 * 60 });
+        res.setHeader("x-api-key", token);
+        return res.status(200).send({ 'status': true, message: "Success", data: token });
 
 
     } catch (error) {
